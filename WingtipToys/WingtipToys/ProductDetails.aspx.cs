@@ -6,6 +6,8 @@ using System.Web.ModelBinding;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using WingtipToys.Models;
+using WingtipToys.Properties;
+using DataRepositories;
 
 namespace WingtipToys
 {
@@ -18,12 +20,13 @@ namespace WingtipToys
 
         public Product GetProduct([QueryString("productID")] int? productID)
         {
-            var _db = new ProductContext();
+            var repo = new MSSQLRepository(Settings.Default.ConnectionString);
 
             Product product = null;
             if (productID.HasValue && productID > 0)
             {
-                product = _db.Products.SingleOrDefault(p => p.ProductID == productID);
+                (string, object)[] id = { (nameof(Product.ProductID), productID) };
+                product = repo.Get<Product>(Product.SQLCommands.GetOne, id).SingleOrDefault();
             }
 
             return product;
